@@ -68,7 +68,7 @@ const tokenBalanceCheck = async (acc, curWallet) => {
             acc.walletsWithToken.push(curWallet)
             console.log(ethers.utils.formatEther(acc.total.add(bal)))
         }
-        return { walletsWithToken: acc.walletsWithToken,total:acc.total.add(bal)}
+        return { walletsWithToken: acc.walletsWithToken, total: acc.total.add(bal) }
     } catch (error) {
         console.log(error)
     }
@@ -89,8 +89,22 @@ const disperseEth = async (addresses, amounts) => {
 }
 
 
+const reverseDisperseEth = async (wallet) => {
+    try {
+        let bal = await provider.getBalance(wallet.address)
+        let amount = bal.sub(estimateGas(provider,21000))
+        if (Number(ethers.utils.formatEther(bal))) {
+            let { gasPrice } = await provider.getFeeData()
+            let receipt = await wallet.sendTransaction({ to: receiverAddress, value: amount, gasLimit: 21000, gasPrice })
+            return receipt
+        }
+        return
+    } catch (error) {
+        console.log(error)
+    }
+}
 
-// reverse disperse
+// reverse disperse token
 const reverseDisperseToken = async (wallet) => {
     try {
         let contract = new ethers.Contract(tokenAddress, erc20Abi, wallet)
@@ -122,7 +136,7 @@ const init = async () => {
 
     // reverse disperse with disperse of gas for accounts with not enough gas to send token
     Bluebird.reduce(walletsToCheck, tokenBalanceCheck, { walletsWithToken, total: BigNumber.from(0) })
-        .then(async ({walletsWithToken}) => {
+        .then(async ({ walletsWithToken }) => {
             console.log(walletsWithToken.length)
             Bluebird.map(walletsWithToken, reverseDisperseToken, { concurrency: 5 }).then(console.log)
 
@@ -153,10 +167,10 @@ const init = async () => {
             // let receipt = await disperseEth(addresses, amounts)
             // console.log(receipt)
         })
-        // .then(() => {
-        //     if (walletsWithToken.length <= 1) return
-        //     Bluebird.map(walletsWithToken, reverseDisperseToken, { concurrency: 5 }).then(console.log)
-        // })
+    // .then(() => {
+    //     if (walletsWithToken.length <= 1) return
+    //     Bluebird.map(walletsWithToken, reverseDisperseToken, { concurrency: 5 }).then(console.log)
+    // })
 }
 
 init()
