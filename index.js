@@ -91,7 +91,7 @@ const disperseEth = async (addresses, amounts) => {
 
 
 // reverse disperse
-const reverseDisperse = async (wallet) => {
+const reverseDisperseToken = async (wallet) => {
     try {
         let contract = new ethers.Contract(tokenAddress, erc20Abi, wallet)
         let bal = await contract.balanceOf(wallet.address)
@@ -124,7 +124,7 @@ const init = async () => {
     Bluebird.reduce(walletsToCheck, tokenBalanceCheck, { walletsWithToken, total: BigNumber.from(0) })
         .then(async ({walletsWithToken}) => {
             console.log(walletsWithToken.length)
-            Bluebird.map(walletsWithToken, reverseDisperse, { concurrency: 5 }).then(console.log)
+            Bluebird.map(walletsWithToken, reverseDisperseToken, { concurrency: 5 }).then(console.log)
 
             // if (walletsWithToken.length == 0) {
             //     return
@@ -134,7 +134,7 @@ const init = async () => {
             //         let { gasPrice } = await provider.getFeeData()
             //         let refuelReceipt = await feederWallet.sendTransaction({ to: walletsWithToken[0].address, value: refuel.amount, gasLimit: 21000, gasPrice })
             //     }
-            //     let receipt = await reverseDisperse(walletsWithToken[0])
+            //     let receipt = await reverseDisperseToken(walletsWithToken[0])
             //     console.log(receipt)
             //     return
             // }
@@ -155,7 +155,7 @@ const init = async () => {
         })
         // .then(() => {
         //     if (walletsWithToken.length <= 1) return
-        //     Bluebird.map(walletsWithToken, reverseDisperse, { concurrency: 5 }).then(console.log)
+        //     Bluebird.map(walletsWithToken, reverseDisperseToken, { concurrency: 5 }).then(console.log)
         // })
 }
 
